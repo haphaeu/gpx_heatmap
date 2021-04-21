@@ -13,16 +13,17 @@ gpx_files = glob.glob(os.path.join(root, '**/*.gpx'), recursive=True)
 print('Processing {} gpx files.'.format(len(gpx_files)))
 
 tracks = []
+means = []
 for i, gpx_file in enumerate(gpx_files):
     
-    print(i + 1, gpx_file, '      ', end='\r')
+    print(i + 1, gpx_file, '      ')
     
     with open(gpx_file, 'r') as fin:
         
         try:
             gpx = gpxpy.parse(fin)                
         except gpxpy.gpx.GPXException:
-            print('\n  ValueError. Skipping. Comma separated values??')
+            print('  ValueError. Skipping. Comma separated values??')
             continue
             
         for track in gpx.tracks:
@@ -34,12 +35,13 @@ for i, gpx_file in enumerate(gpx_files):
                     points.append([point.latitude, point.longitude])
             
             tracks.append(points)
+            means.append(numpy.array(points).mean(axis=0))
+
+print('Added {} tracks.'.format(len(tracks)))
 
 # find a mean point to centralise map
-means = []
-for track in tracks:
-    means.append(numpy.array(track).mean(axis=0))
 mean = numpy.array(means).mean(axis=0)
+
 heatmap = folium.Map(location=mean, zoom_start=15)
 
 for points in tracks:
